@@ -24,7 +24,7 @@ import com.google.api.services.bigquery.model.TableRow;
 /**
  * Unit test for verifying Log4j2 is sending log messages to BigQuery using the {@link BigQueryAppender} appender.
  * 
- * @author Sonny Trujillo
+ * @author Sonny Trujillo <sonnyt@customercentrix.com>
  */
 public class Log4jTests
 {

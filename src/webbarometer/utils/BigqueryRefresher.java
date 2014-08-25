@@ -15,7 +15,7 @@ import com.google.api.services.bigquery.model.TableSchema;
 /**
  * Refreshes the Log4jTestTable by deleting it, then recreating it. 
  * 
- * @author Sonny
+ * @author Sonny Trujillo <sonnyt@customercentrix.com>
  */
 public class BigqueryRefresher
 {

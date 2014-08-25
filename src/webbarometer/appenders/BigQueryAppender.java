@@ -27,7 +27,7 @@ import webbarometer.utils.BigqueryUtils;
 /**
  * Log4j2 Appender for sending log messages to Big Query
  * 
- * @author Sonny Trujillo
+ * @author Sonny Trujillo <sonnyt@customercentrix.com>
  */
 @Plugin(name = "BigQueryAppender", category = "Core", elementType = "appender", printObject = true)
 public class BigQueryAppender extends AbstractAppender

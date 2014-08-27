@@ -2,6 +2,7 @@ package webbarometer.utils;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -29,8 +30,10 @@ public class BigqueryRefresher
 	 * Connects to BigQuery, deletes the table, and then recreates it.
 	 * 
 	 * @param bigquery The {@link Bigquery}.
+	 * @throws IOException 
+	 * @throws GeneralSecurityException 
 	 */
-	public void start()
+	public void start() throws GeneralSecurityException, IOException
 	{
 		tableReference = new TableReference();
 		tableReference.setProjectId(BigqueryUtils.PROJECT_ID);
@@ -73,8 +76,9 @@ public class BigqueryRefresher
 	 * <li>thread: {@link FieldType#STRING}</li>
 	 * <li>thrown: {@link FieldType#STRING}</li>
 	 * <li>message: {@link FieldType#STRING}</li>
+	 * @throws IOException 
 	 */
-	public void createTestTable()
+	public void createTestTable() throws IOException
 	{
 		List<TableFieldSchema> fields = new LinkedList<TableFieldSchema>();
 		fields.add(BigqueryUtils.makeFieldSchema("timestamp", FieldType.TIMESTAMP));
@@ -93,7 +97,18 @@ public class BigqueryRefresher
 	
 	public static void main(String[] args)
 	{
-		new BigqueryRefresher().start();
+		try
+		{
+			new BigqueryRefresher().start();
+		}
+		catch (GeneralSecurityException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 }

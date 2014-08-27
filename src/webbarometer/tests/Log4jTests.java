@@ -2,6 +2,7 @@ package webbarometer.tests;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,9 +35,11 @@ public class Log4jTests
 	 * Logs DEBUG through FATAL error messages and verifies they are sent to BigQuery. 
 	 * 
 	 * @throws InterruptedException
+	 * @throws IOException 
+	 * @throws GeneralSecurityException 
 	 */
 	@Test
-	public void loggingTest() throws InterruptedException
+	public void loggingTest() throws InterruptedException, GeneralSecurityException, IOException
 	{
 		Bigquery bigquery = BigqueryUtils.makeBigqueryConnection(BigqueryUtils.SERVICE_ACCOUNT_EMAIL, new File("key.p12"));
 		

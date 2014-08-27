@@ -1,9 +1,11 @@
 package webbarometer.appenders;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
@@ -40,7 +42,7 @@ public class BigQueryAppender extends AbstractAppender
 		.setDatasetId(BigqueryUtils.DATASET_ID)
 		.setTableId(TEST_TABLE_NAME);
 
-	protected BigQueryAppender(String name, Filter filter, Layout<? extends Serializable> layout)
+	protected BigQueryAppender(String name, Filter filter, Layout<? extends Serializable> layout) throws GeneralSecurityException, IOException
 	{
 		super(name, filter, layout);
 		
@@ -73,7 +75,14 @@ public class BigQueryAppender extends AbstractAppender
 		List<TableDataInsertAllRequest.Rows> data = new LinkedList<TableDataInsertAllRequest.Rows>();		
 		data.add(rows);
 		
-		BigqueryUtils.insertTableData(bigquery, testTableRef, data);				
+		try
+		{
+			BigqueryUtils.insertTableData(bigquery, testTableRef, data);
+		}
+		catch (IOException e)
+		{
+			System.err.println("Could not insert table data into BigQuery: " + e.getMessage());			
+		}				
 	}
 
 	/**
@@ -101,7 +110,7 @@ public class BigQueryAppender extends AbstractAppender
 	public static BigQueryAppender createAppender(
 			@PluginAttribute("name") String name,			
             @PluginElement("Filters") Filter filter,
-			@PluginElement("Layout") Layout<? extends Serializable> layout) 
+			@PluginElement("Layout") Layout<? extends Serializable> layout) throws GeneralSecurityException, IOException 
 	{
 	    return new BigQueryAppender(name, filter, layout);
 	}

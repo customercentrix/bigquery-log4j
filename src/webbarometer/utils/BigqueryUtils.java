@@ -16,14 +16,10 @@ import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.services.bigquery.Bigquery;
 import com.google.api.services.bigquery.Bigquery.Tabledata.InsertAll;
 import com.google.api.services.bigquery.BigqueryScopes;
-import com.google.api.services.bigquery.model.Dataset;
-import com.google.api.services.bigquery.model.DatasetList;
-import com.google.api.services.bigquery.model.ProjectList;
 import com.google.api.services.bigquery.model.Table;
 import com.google.api.services.bigquery.model.TableDataInsertAllRequest;
 import com.google.api.services.bigquery.model.TableDataInsertAllResponse;
 import com.google.api.services.bigquery.model.TableFieldSchema;
-import com.google.api.services.bigquery.model.TableList;
 import com.google.api.services.bigquery.model.TableReference;
 import com.google.api.services.bigquery.model.TableSchema;
 
@@ -42,124 +38,24 @@ public class BigqueryUtils
 	public static final String DATASET_ID = "Logging";
 	public static final String SERVICE_ACCOUNT_EMAIL =
 			"750903728331-t6hl208qt3v8r4e5bcr3ggi0ujkghc8k@developer.gserviceaccount.com";
-	
-	public static final int MAX_BATCH_SIZE = 500;
-	
+		
 	private static final SimpleDateFormat bigqueryDateFormatter = new SimpleDateFormat("YYYY-MM-dd HH:mm:ss.SS");	
 	
 	/**
-	 * List all projects to which the authenticated account has at least read access.
+	 * Creates and inserts a table given the Table reference and scheme.
 	 * 
-	 * @param bigquery
-	 * 		The connected Bigquery object.
-	 * @return
-	 * 		A list containing the details of every project available to the authenticated account.
-	 */
-	public static List<ProjectList.Projects> listProjects(Bigquery bigquery)
-	{
-		try
-		{
-			return bigquery.projects().list().execute().getProjects();
-		}
-		catch(IOException e)
-		{
-			//TODO: Make this more detailed.
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * List all the datasets within a specified project.
+	 * @param bigquery {@link Bigquery} object.
+	 * @param ref {@link TableReference} definition
+	 * @param schema {@link TableScheme} defintion
 	 * 
-	 * @param bigquery
-	 * @param projectId
-	 * @return
+	 * @return The created {@link Table}
+	 * @throws IOException 
 	 */
-	public static List<DatasetList.Datasets> listDatasets(Bigquery bigquery, String projectId)
-	{
-		try
-		{
-			return bigquery.datasets().list(projectId).execute().getDatasets();
-		}
-		catch(IOException e)
-		{
-			//TODO: Make this more detailed.
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
-	/**
-	 * List all the tables within a specified dataset.
-	 * 
-	 * @param bigquery
-	 * @param projectId
-	 * @param datasetId
-	 * @return
-	 */
-	public static List<TableList.Tables> listTables(Bigquery bigquery, String projectId, String datasetId)
-	{
-		try
-		{
-			return bigquery.tables().list(projectId, datasetId).execute().getTables();
-		}
-		catch(IOException e)
-		{
-			//TODO: Make this more detailed.
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
-	public static Dataset getDataset(Bigquery bigquery, String projectId, String datasetId)
-	{
-		try
-		{
-			return bigquery.datasets().get(projectId, datasetId).execute();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
-	public static Table getTable(Bigquery bigquery, TableReference ref)
-	{
-		try
-		{
-			return bigquery.tables().get(ref.getProjectId(), ref.getDatasetId(), ref.getTableId()).execute();
-		}
-		catch(IOException e)
-		{
-			//TODO: Make this more detailed.
-			e.printStackTrace();
-		}
-		
-		return null;
-	}
-	
-	public static Table createAndInsertTable(Bigquery bigquery, TableReference ref, TableSchema schema)
+	public static Table createAndInsertTable(Bigquery bigquery, TableReference ref, TableSchema schema) throws IOException
 	{
 		Table table = new Table().setSchema(schema).setTableReference(ref);
 		
-		try
-		{
-			return bigquery.tables().insert(ref.getProjectId(), ref.getDatasetId(), table).execute();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return null;
+		return bigquery.tables().insert(ref.getProjectId(), ref.getDatasetId(), table).execute();
 	}
 	
 	/**
@@ -207,56 +103,20 @@ public class BigqueryUtils
 	}
 	
 	/**
-	 * A convenience method for creating a field schema of the RECORD type.
-	 * 
-	 * @param name
-	 * 		The name of the field.
-	 * @param mode
-	 * 		The mode of this field.
-	 * @param description
-	 * 		This fields description. (Can be null)
-	 * @param nestedSchema
-	 * 		The nested schema structure of this RECORD.
-	 * @return
-	 * 		The schema of the created field.
-	 * 
-	 * @see #makeFieldSchema(String, FieldType)
-	 * @see #makeFieldSchema(String, FieldType, FieldMode, String)
-	 */
-	public static TableFieldSchema makeFieldSchema(String name, List<TableFieldSchema> nestedSchema, FieldMode mode, String description)
-	{
-		return new TableFieldSchema()
-				.setName(name)
-				.setType(FieldType.RECORD.toString())
-				.setMode(mode.toString())
-				.setDescription(description)
-				.setFields(nestedSchema);
-	}
-	
-	/**
 	 * Inserts the given data into the given table.
 	 * 
 	 * @param bigquery
 	 * @param ref
 	 * @param data
 	 * @return
+	 * @throws IOException 
 	 */
-	public static TableDataInsertAllResponse insertTableData(Bigquery bigquery, TableReference ref, List<TableDataInsertAllRequest.Rows> data)
+	public static TableDataInsertAllResponse insertTableData(Bigquery bigquery, TableReference ref, List<TableDataInsertAllRequest.Rows> data) throws IOException
 	{
 		TableDataInsertAllRequest insertRequest = new TableDataInsertAllRequest().setRows(data);
 		
-		try
-		{
-			InsertAll req = bigquery.tabledata().insertAll(PROJECT_ID, DATASET_ID, ref.getTableId(), insertRequest);			
-			return req.execute();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return null;
+		InsertAll req = bigquery.tabledata().insertAll(PROJECT_ID, DATASET_ID, ref.getTableId(), insertRequest);			
+		return req.execute();
 	}
 	
 	/**
@@ -306,49 +166,14 @@ public class BigqueryUtils
 		return credentials;
 	}
 	
-	/**
-	 * Build a {@link GoogleCredential} that connects to Bigquery using the default JacksonFactory instance as a 
-	 * Json parser and a new secure HttpTransport (using {@link GoogleNetHttpTransport#newTrustedTransport()}).
-	 * 
-	 * @param serviceAccountEmail
-	 * 		The google service email account that will be used for the connection.
-	 * @param privateKey
-	 * 		The private key for this account.
-	 * @return
-	 * 		A new {@link GoogleCredential} containing both the access and refresh tokens for accessing Bigquery.
-	 * 
-	 * @see #createBigqueryServiceCredentials(String, File, JsonFactory, HttpTransport)
-	 * 
-	 * @throws GeneralSecurityException
-	 * @throws IOException
-	 */
-	public static GoogleCredential createBigqueryServiceCredentials(String serviceAccountEmail, File privateKey) throws GeneralSecurityException, IOException
-	{
-		return createBigqueryServiceCredentials(serviceAccountEmail, privateKey, JacksonFactory.getDefaultInstance(), GoogleNetHttpTransport.newTrustedTransport());
-	}
 	
-	public static Bigquery makeBigqueryConnection(String serviceAccountEmail, File privateKey)
+	public static Bigquery makeBigqueryConnection(String serviceAccountEmail, File privateKey) throws GeneralSecurityException, IOException
 	{
-		try
-		{
-			JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
-			HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
+		JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
+		HttpTransport transport = GoogleNetHttpTransport.newTrustedTransport();
 			
-			GoogleCredential credentials = createBigqueryServiceCredentials(serviceAccountEmail, privateKey, jsonFactory, transport);
-			return new Bigquery.Builder(transport, jsonFactory, credentials).build();
-		}
-		catch (GeneralSecurityException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-		return null;
+		GoogleCredential credentials = createBigqueryServiceCredentials(serviceAccountEmail, privateKey, jsonFactory, transport);
+		return new Bigquery.Builder(transport, jsonFactory, credentials).build();	
 	}
 	
 	/**
